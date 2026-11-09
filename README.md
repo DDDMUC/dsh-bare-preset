@@ -2,6 +2,22 @@
 
 「裸模模式」agent 预设，做成一个**插件**（自己向 `agentPresets` 注册），顺手把宿主强加给 agent 的运行时开销一并剪掉。
 
+## 安装
+
+```
+npm:  dsh-bare-preset@0.1.1
+repo: https://github.com/DDDMUC/dsh-bare-preset
+```
+
+装法二选一：
+
+1. **插件管理器**里搜 `dsh-bare-preset`，装上启用（这会往 profile 的 `dependencies` + `dsh.profile.bundles` 里登记）。
+2. 手工改 `~/.dsh/profiles/<profile>/package.json`：`dependencies` 加
+   `"dsh-bare-preset": "0.1.1"`（或 `"github:DDDMUC/dsh-bare-preset"`），
+   `dsh.profile.bundles` 数组里加 `"dsh-bare-preset"`，然后重启。
+
+重启后预设选择器里会出现 **「裸模模式」**（id `bare`），跟它开一个新会话即可。
+
 ## 为什么不用预设目录 + bundle patch
 
 那些坑都踩过：bundle patch 里的行要注册进 registry，而 registry 用它**自己的** baseUrl 解析相对路径（`./persona-file.mjs` 直接 import 失败，预设从选择器里消失）；`id` 必须是字符串；声明归属还要和「预设工作台」的运行时声明抢所有权。
