@@ -45,8 +45,7 @@ repo: https://github.com/DDDMUC/dsh-bare-preset
 
 ## 预期效果
 
-同一 profile 下 `standard` 会话首步约 19K token；本预设约 **15–20 token**（你的那句话 + 服务端角色标记）。输出 token 不算在内 —— 那是模型自己想的。
-
+同一 profile 下 `standard` 会话首步约 19K token；本预设约 **15–20 token**（你的那句话 + 服务端角色标记）。
 ## 备注
 
 - `tools.restrict` / `when` / `required` 三处都是改注册对象本身（registry 返回的是真身，不是副本），不落盘；插件重载后由 `agent/created` 与 `turn/start` 重新施加。DSH 升级若改了内部结构，表现是"工具/上下文又冒出来"，不会崩。
