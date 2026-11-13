@@ -5,7 +5,7 @@
 ## 安装
 
 ```
-npm:  dsh-bare-preset@0.1.1
+npm:  dsh-bare-preset@0.2.0
 repo: https://github.com/DDDMUC/dsh-bare-preset
 ```
 
@@ -13,7 +13,7 @@ repo: https://github.com/DDDMUC/dsh-bare-preset
 
 1. **插件管理器**里搜 `dsh-bare-preset`，装上启用（这会往 profile 的 `dependencies` + `dsh.profile.bundles` 里登记）。
 2. 手工改 `~/.dsh/profiles/<profile>/package.json`：`dependencies` 加
-   `"dsh-bare-preset": "0.1.1"`（或 `"github:DDDMUC/dsh-bare-preset"`），
+   `"dsh-bare-preset": "0.2.0"`（或 `"github:DDDMUC/dsh-bare-preset"`），
    `dsh.profile.bundles` 数组里加 `"dsh-bare-preset"`，然后重启。
 
 重启后预设选择器里会出现 **「裸模模式」**（id `bare`），跟它开一个新会话即可。
@@ -30,18 +30,24 @@ repo: https://github.com/DDDMUC/dsh-bare-preset
 |---|---|---|---|
 | 系统提示词 | — | 人设行 `complete: true` + 空文本，`suppressRuntimeContext()` | 全部 |
 | 全局工具 | 宿主各插件 | `tools.restrict({ allow: [] })`（persona 行） | 全部 |
-| agent 作用域工具（Agent Teams 9 个） | `tool-agent-team` 用 `agent.ctx` 注册 | 把注册对象的 `when` 换成恒假，`resolve()` 的 admit 阶段剔除 | ~1.5K token |
-| `team:identity`、`working-directory:current` | 同上 / `working-directory` | `required` 翻 false（全局那条在本层放 `required:false` 的影子） | ~90 token |
+| agent 本层注册的**所有**工具 | 任何插件用 `agent.ctx.tools.register()` 塞的（Agent Teams 的 9 个是其中之一） | 把注册对象的 `when` 换成恒假，`resolve()` 的 admit 阶段剔除；只动本层，不碰全局 | ~1.5K token |
+| 所有 runtime context | `working-directory`、`tool-agent-team`、沙盒/审批、时长…… | 本层的 `required` 翻 false；祖先/全局层的在本层放 `required:false` 的影子 | ~90 token |
 
 最后一项全部滤掉后，`joinContextSections([])` 是空串，`project()` 返回 `undefined`，那条 runtime-context user 消息整条不出现。注意**不能**在 `agent/pre-step` 里删它 —— agent-loop 在 append 之前会 `refreshContext` + `project` 重新算一遍，删的和追加的不是同一份。
 
+## 剪裁是「全清」，不是名单
+
+早期版本按名字剪（9 个团队工具 + 2 个 context），后来改成按**位置**剪：
+
+- 工具：`tools.layers.peek(agent).tools` 里的每一条（agent 本层）都 deny；全局工具由 `tools.restrict` 负责。
+- context：`layers.merge(agent, l => l.contexts)` 里除本层之外的每一条都在本层放 `required:false` 的影子；本层的直接翻 `required`。
+
+所以以后哪个插件往 agent 作用域里注册工具或 context，都会在下一轮 `turn/start`（早于 `tools.resolve` 与上下文装配）被清掉，不需要改代码。
+
 ## 开关
 
-`lib/index.js` 顶部：
-
-- `PRUNED_TOOL_NAMES` —— 要剪掉的 agent 作用域工具（默认是 Agent Teams 那 9 个，清空数组即可保留）
-- `SUPPRESSED_CONTEXTS` —— 要滤掉的 runtime context 名（清空即保留 cwd / 团队身份）
 - `noTools`（组合里 persona 行的 config）—— 关掉就不做全局工具 restrict
+- 想保留 agent 本层的某些工具：改 `lib/index.js` 的 `denyOwnTools()`，加个白名单判断即可
 
 ## 预期效果
 

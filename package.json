@@ -1,6 +1,6 @@
 {
   "name": "dsh-bare-preset",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "裸模模式：把「空系统提示词 + 零工具 + 零运行时上下文」这个 agent 预设置成一个插件 —— 自己向 agentPresets 注册，并剪掉宿主塞进 agent 作用域的工具与上下文。",
   "type": "module",
   "main": "lib/index.js",
